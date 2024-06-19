@@ -1,0 +1,23 @@
+[2024-06-19T14:01:15.854+0000] {local_task_job_runner.py:120} INFO - ::group::Pre task execution logs
+[2024-06-19T14:01:15.875+0000] {taskinstance.py:2076} INFO - Dependencies all met for dep_context=non-requeueable deps ti=<TaskInstance: process_user_profiles.create_user_profiles_silver_layer_task manual__2024-06-19T14:01:04.678464+00:00 [queued]>
+[2024-06-19T14:01:15.886+0000] {taskinstance.py:2076} INFO - Dependencies all met for dep_context=requeueable deps ti=<TaskInstance: process_user_profiles.create_user_profiles_silver_layer_task manual__2024-06-19T14:01:04.678464+00:00 [queued]>
+[2024-06-19T14:01:15.887+0000] {taskinstance.py:2306} INFO - Starting attempt 1 of 1
+[2024-06-19T14:01:15.909+0000] {taskinstance.py:2330} INFO - Executing <Task(BigQueryInsertJobOperator): create_user_profiles_silver_layer_task> on 2024-06-19 14:01:04.678464+00:00
+[2024-06-19T14:01:15.917+0000] {warnings.py:110} WARNING - /home/***/.local/lib/python3.12/site-packages/***/task/task_runner/standard_task_runner.py:61: DeprecationWarning: This process (pid=221) is multi-threaded, use of fork() may lead to deadlocks in the child.
+  pid = os.fork()
+
+[2024-06-19T14:01:15.919+0000] {standard_task_runner.py:63} INFO - Started process 223 to run task
+[2024-06-19T14:01:15.919+0000] {standard_task_runner.py:90} INFO - Running: ['***', 'tasks', 'run', 'process_user_profiles', 'create_user_profiles_silver_layer_task', 'manual__2024-06-19T14:01:04.678464+00:00', '--job-id', '112', '--raw', '--subdir', 'DAGS_FOLDER/user_profiles_process_dags.py', '--cfg-path', '/tmp/tmpboxdod65']
+[2024-06-19T14:01:15.920+0000] {standard_task_runner.py:91} INFO - Job 112: Subtask create_user_profiles_silver_layer_task
+[2024-06-19T14:01:15.981+0000] {task_command.py:426} INFO - Running <TaskInstance: process_user_profiles.create_user_profiles_silver_layer_task manual__2024-06-19T14:01:04.678464+00:00 [running]> on host 1912bc156df7
+[2024-06-19T14:01:16.092+0000] {taskinstance.py:2648} INFO - Exporting env vars: AIRFLOW_CTX_DAG_OWNER='***' AIRFLOW_CTX_DAG_ID='process_user_profiles' AIRFLOW_CTX_TASK_ID='create_user_profiles_silver_layer_task' AIRFLOW_CTX_EXECUTION_DATE='2024-06-19T14:01:04.678464+00:00' AIRFLOW_CTX_TRY_NUMBER='1' AIRFLOW_CTX_DAG_RUN_ID='manual__2024-06-19T14:01:04.678464+00:00'
+[2024-06-19T14:01:16.094+0000] {taskinstance.py:430} INFO - ::endgroup::
+[2024-06-19T14:01:16.106+0000] {connection.py:274} WARNING - Connection schemes (type: google_cloud_platform) shall not contain '_' according to RFC3986.
+[2024-06-19T14:01:16.110+0000] {base.py:84} INFO - Using connection ID 'google_cloud_default' for task execution.
+[2024-06-19T14:01:16.168+0000] {bigquery.py:2832} INFO - Executing: {'query': {'query': "\nWITH users_profilies_stage AS(\n  SELECT\n    INITCAP(CAST(state AS STRING)) AS state,\n    CAST(birth_date AS DATE) AS birth_date,\n    INITCAP(CAST(SPLIT(full_name, ' ')[0] AS STRING)) AS first_name,\n    INITCAP(CAST(SPLIT(full_name, ' ')[1] AS STRING)) AS last_name, \n  \n    REGEXP_REPLACE(\n    REGEXP_EXTRACT(phone_number, r'.?\\d{3}.?\\d{3}.?\\d{4}'),\n      r'[()\\-\\.]', ''\n    ) AS phone_number,\n\n    CAST(email AS STRING) AS email, \n\n  FROM `rd-final-project.bronze_layer.bronze_user_profiles`\n)\n\nSELECT\n  state, birth_date, first_name, last_name, email,\n  CONCAT(\n    '+1-', SUBSTR(phone_number, 1, 3),\n    '-', SUBSTR(phone_number, 4, 3),\n    '-', SUBSTR(phone_number, 7, 4)\n  ) AS phone_number\nFROM users_profilies_stage", 'useLegacySql': False, 'writeDisposition': 'WRITE_EMPTY', 'createDisposition': 'CREATE_IF_NEEDED', 'destinationTable': {'projectId': 'rd-final-project', 'datasetId': 'silver_layer', 'tableId': 'silver_user_profiles'}}}'
+[2024-06-19T14:01:16.170+0000] {bigquery.py:1660} INFO - Inserting job ***_process_user_profiles_create_user_profiles_silver_layer_task_2024_06_19T14_01_04_678464_00_00_5ad74b5501bd4ba461f1c5eecf004ae1
+[2024-06-19T14:01:19.672+0000] {taskinstance.py:441} INFO - ::group::Post task execution logs
+[2024-06-19T14:01:19.717+0000] {taskinstance.py:1206} INFO - Marking task as SUCCESS. dag_id=process_user_profiles, task_id=create_user_profiles_silver_layer_task, run_id=manual__2024-06-19T14:01:04.678464+00:00, execution_date=20240619T140104, start_date=20240619T140115, end_date=20240619T140119
+[2024-06-19T14:01:19.796+0000] {local_task_job_runner.py:240} INFO - Task exited with return code 0
+[2024-06-19T14:01:19.866+0000] {taskinstance.py:3498} INFO - 0 downstream tasks scheduled from follow-on schedule check
+[2024-06-19T14:01:19.879+0000] {local_task_job_runner.py:222} INFO - ::endgroup::

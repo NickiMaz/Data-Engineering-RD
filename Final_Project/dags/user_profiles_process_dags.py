@@ -18,14 +18,14 @@ GCP_PROJECT_NAME = 'rd-final-project'
 RAW_BUCKET_NAME = 'file_storage_raw'
 
 DATASET_BRONZE = 'bronze_layer'
-TABLE_BRONZE = 'bronze_user_profilies'
-PATH_TO_SOURCE = 'data/user_profiles/*.csv'
+TABLE_BRONZE = 'bronze_user_profiles'
+PATH_TO_SOURCE = 'data/user_profiles/*.json'
 
 DATASET_SILVER = 'silver_layer'
 TABLE_SILVER = 'silver_user_profiles'
 
 with open(Path(__file__).parent / 'user_profiles_process_cfg' / 'silver_user_profiles_create.sql', 'r') as f:
-    SILVER_USER_PROFILIES_QUERY = f.read()
+    SILVER_USER_PROFILES_QUERY = f.read()
 
 with DAG(dag_id='process_user_profiles', schedule=None, catchup=False, max_active_runs=1,
          tags=['RD', 'Final Project']):
@@ -47,7 +47,7 @@ with DAG(dag_id='process_user_profiles', schedule=None, catchup=False, max_activ
         location='US',
         configuration={
             'query': {
-                'query': SILVER_USER_PROFILIES_QUERY,
+                'query': SILVER_USER_PROFILES_QUERY,
                 'useLegacySql': False,
                 'writeDisposition': 'WRITE_EMPTY',
                 'createDisposition': 'CREATE_IF_NEEDED',

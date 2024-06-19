@@ -13,7 +13,7 @@ WITH users_profilies_stage AS(
 
     CAST(email AS STRING) AS email, 
 
-  FROM `rd-final-project.bronze_layer.bronze_user_profilies`
+  FROM `rd-final-project.bronze_layer.bronze_user_profiles`
 )
 
 SELECT
