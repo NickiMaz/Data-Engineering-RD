@@ -5,6 +5,7 @@ GCS -> BigQuery -> BigQuery
 from pathlib import Path
 
 from airflow.models.dag import DAG
+from airflow.models import Variable
 from airflow.providers.google.cloud.operators.bigquery import (
     BigQueryCreateExternalTableOperator,
     BigQueryInsertJobOperator,
@@ -12,20 +13,10 @@ from airflow.providers.google.cloud.operators.bigquery import (
 
 from airflow.operators.empty import EmptyOperator
 
-from user_profiles_process_cfg.user_profiles_process_schemas import BRONZE_SCHEMA
-
-GCP_PROJECT_NAME = 'rd-final-project'
-RAW_BUCKET_NAME = 'file_storage_raw'
-
-DATASET_BRONZE = 'bronze_layer'
-TABLE_BRONZE = 'bronze_user_profiles'
-PATH_TO_SOURCE = 'data/user_profiles/*.json'
-
-DATASET_SILVER = 'silver_layer'
-TABLE_SILVER = 'silver_user_profiles'
-
-with open(Path(__file__).parent / 'user_profiles_process_cfg' / 'silver_user_profiles_create.sql', 'r') as f:
-    SILVER_USER_PROFILES_QUERY = f.read()
+from user_profiles_process_cfg.user_profiles_process_schemas import (
+    BRONZE_SCHEMA,
+    silver_user_profiles_creation_cfg
+)
 
 with DAG(dag_id='process_user_profiles', schedule=None, catchup=False, max_active_runs=1,
          tags=['RD', 'Final Project']):
@@ -34,9 +25,9 @@ with DAG(dag_id='process_user_profiles', schedule=None, catchup=False, max_activ
 
     create_user_profiles_bronze_layer_task = BigQueryCreateExternalTableOperator(
         task_id='create_user_profiles_bronze_layer_task',
-        destination_project_dataset_table=f'{DATASET_BRONZE}.{TABLE_BRONZE}',
-        bucket=RAW_BUCKET_NAME,
-        source_objects=[PATH_TO_SOURCE],
+        destination_project_dataset_table=Variable.get('table_bronze_user_profiles'),
+        bucket=Variable.get('raw_bucket_name'),
+        source_objects=[Variable.get('path_to_user_profiles')],
         source_format='NEWLINE_DELIMITED_JSON',
         skip_leading_rows=1,
         schema_fields=BRONZE_SCHEMA,
@@ -45,20 +36,7 @@ with DAG(dag_id='process_user_profiles', schedule=None, catchup=False, max_activ
     create_user_profiles_silver_layer_task = BigQueryInsertJobOperator(
         task_id='create_user_profiles_silver_layer_task',
         location='US',
-        configuration={
-            'query': {
-                'query': SILVER_USER_PROFILES_QUERY,
-                'useLegacySql': False,
-                'writeDisposition': 'WRITE_EMPTY',
-                'createDisposition': 'CREATE_IF_NEEDED',
-
-                'destinationTable': {
-                    'projectId': GCP_PROJECT_NAME,
-                    'datasetId': DATASET_SILVER,
-                    'tableId': TABLE_SILVER
-                },
-            }
-        },
+        configuration=silver_user_profiles_creation_cfg,
     )
 
     end_task = EmptyOperator(task_id='end_task')
